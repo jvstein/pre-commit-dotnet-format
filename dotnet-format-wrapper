@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+# Wrapper for the dotnet-format command that is compatible with pre-commit.
+
+FOLDER=""
+WORKSPACE=""
+EXCLUDE=""
+VERBOSITY=""
+FILES=()
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --folder)
+      FOLDER=$2
+      shift
+      ;;
+    --workspace|-w)
+      WORKSPACE=$2
+      shift
+      ;;
+    --exclude)
+      EXCLUDE=$2
+      shift
+      ;;
+    --verbosity|-v)
+      VERBOSITY=$2
+      shift
+      ;;
+    --dry-run|--check|--version)
+      # Ignore these no-arg options.
+      ;;
+    --report|--files|--include)
+      # Ignore these single-arg options.
+      shift
+      ;;
+    *)
+      FILES+=($1)
+      ;;
+  esac
+
+  shift
+done
+
+# Filenames are relative to the workspace.
+WORKSPACE_DIR="."
+if [[ ! -z $WORKSPACE ]]; then
+  WORKSPACE_DIR=$(dirname "$WORKSPACE")
+fi
+
+COMMA_SEP_FILES=""
+for f in "${FILES[@]}"; do
+  RELATIVE_PATH=$(realpath --relative-to="${WORKSPACE_DIR}" "$f")
+  # Pass files into the "--files" command.
+  if [[ ! -z $COMMA_SEP_FILES ]]; then
+    COMMA_SEP_FILES="${COMMA_SEP_FILES},"
+  fi
+  COMMA_SEP_FILES="${COMMA_SEP_FILES}${RELATIVE_PATH}"
+done
+
+ARGS=()
+if [[ ! -z $VERBOSITY ]]; then
+  ARGS+=("--verbosity" $VERBOSITY)
+fi
+if [[ ! -z $FOLDER ]]; then
+  ARGS+=("--folder" "$FOLDER")
+fi
+if [[ ! -z $WORKSPACE ]]; then
+  ARGS+=("--workspace" "$WORKSPACE")
+fi
+if [[ ! -z $EXCLUDE ]]; then
+  ARGS+=("--exclude" "$EXCLUDE")
+fi
+if [[ ! -z $COMMA_SEP_FILES ]]; then
+  ARGS+=("--files" "$COMMA_SEP_FILES")
+fi
+
+exec /opt/dotnet-format/dotnet-format "${ARGS[@]}"
