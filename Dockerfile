@@ -1,7 +1,7 @@
 ARG dotnet_version=3.1-alpine
 FROM mcr.microsoft.com/dotnet/core/sdk:${dotnet_version}
 
-ARG dotnet_format_version=3.3.111304
+ARG dotnet_format_version=4.0.130203
 
 ENV PATH="${PATH}:/opt/dotnet-format"
 

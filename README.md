@@ -8,7 +8,7 @@ Add this to your `.pre-commit-config.yaml`
 
 ```
 -   repo: https://github.com/jvstein/pre-commit-dotnet-format
-    rev: 'v0.1'
+    rev: 'v0.2'
     hooks:
     -   id: dotnet-format
 ```
@@ -18,34 +18,44 @@ solution file, pass it in with the `--workspace` argument.
 
 ```
 -   repo: https://github.com/jvstein/pre-commit-dotnet-format
-    rev: 'v0.1'
+    rev: 'v0.2'
     hooks:
     -   id: dotnet-format
-        args: ['--workspace', 'subfolder/project.sln']
+        args: ['subfolder/project.sln']
 ```
 
-If you have multiple `.sln` files in your repo, you may specify multiple hook configurations.
+If you have multiple solution or project files in your repo, you may specify multiple hook configurations.
 
 ```
 -   repo: https://github.com/jvstein/pre-commit-dotnet-format
-    rev: 'v0.1'
+    rev: 'v0.2'
     hooks:
     -   id: dotnet-format
         name: dotnet-format-proj1
         files: 'subfolder1/.*'
-        args: ['--workspace', 'subfolder1/project.sln']
+        args: ['subfolder1/project.csproj']
     -   id: dotnet-format
         name: dotnet-format-proj2
         files: 'subfolder2/.*'
-        args: ['--workspace', 'subfolder2/project.sln']
+        args: ['subfolder2/project.sln']
 ```
 
 Alternatively, specify a root folder for all code with the `--folder` argument.
 
 ```
 -   repo: https://github.com/jvstein/pre-commit-dotnet-format
-    rev: 'v0.1'
+    rev: 'v0.2'
     hooks:
     -   id: dotnet-format
-        args: ['--folder', './']
+        args: ['.', '--folder']
+```
+
+It's possible to exclude files from the run using `--exclude`. Be sure to follow your exclude list with `--`.
+
+```
+-   repo: https://github.com/jvstein/pre-commit-dotnet-format
+    rev: 'v0.2'
+    hooks:
+    -   id: dotnet-format
+        args: ['--exclude', 'subfolder3/', '--']
 ```

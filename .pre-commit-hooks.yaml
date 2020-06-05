@@ -3,4 +3,4 @@
   name: dotnet-format
   language: docker_image
   files: '\.cs'
-  entry: registry.hub.docker.com/jvstein/pre-commit-dotnet-format:v0.1 /usr/bin/dotnet-format-wrapper
+  entry: registry.hub.docker.com/jvstein/pre-commit-dotnet-format:v0.2

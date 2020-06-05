@@ -1,38 +1,42 @@
 #!/usr/bin/env bash
 # Wrapper for the dotnet-format command that is compatible with pre-commit.
 
-FOLDER=""
-WORKSPACE=""
+PROJECT=""
 EXCLUDE=""
 VERBOSITY=""
+FOLDER=0
+EXCLUDE=()
 FILES=()
+
+# Keep the project if it's a file/folder that is not a cs file.
+if [[ -f $1 ]] && ([[ $1 == *proj ]] || [[ $1 == *sln ]]); then
+  PROJECT="$1"
+fi
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --folder)
-      FOLDER=$2
-      shift
-      ;;
-    --workspace|-w)
-      WORKSPACE=$2
-      shift
+    --folder|-f)
+      FOLDER=1
       ;;
     --exclude)
-      EXCLUDE=$2
-      shift
+      while [[ ! -z $2 ]] && [[ $2 != -* ]]; do
+        EXCLUDE+=($2)
+        shift
+      done
       ;;
     --verbosity|-v)
       VERBOSITY=$2
       shift
       ;;
-    --dry-run|--check|--version)
+    --check|--version)
       # Ignore these no-arg options.
       ;;
-    --report|--files|--include)
-      # Ignore these single-arg options.
+    --report|--include|--)
+      # Ignore these arguments.
       shift
       ;;
     *)
+      # Paths relative to the PWD that need to be made relative for --include.
       FILES+=($1)
       ;;
   esac
@@ -42,35 +46,36 @@ done
 
 # Filenames are relative to the workspace.
 WORKSPACE_DIR="."
-if [[ ! -z $WORKSPACE ]]; then
-  WORKSPACE_DIR=$(dirname "$WORKSPACE")
+if [[ ! -z $PROJECT ]]; then
+  WORKSPACE_DIR=$(dirname "$PROJECT")
 fi
 
-COMMA_SEP_FILES=""
+INCLUDE=()
 for f in "${FILES[@]}"; do
   RELATIVE_PATH=$(realpath --relative-to="${WORKSPACE_DIR}" "$f")
-  # Pass files into the "--files" command.
-  if [[ ! -z $COMMA_SEP_FILES ]]; then
-    COMMA_SEP_FILES="${COMMA_SEP_FILES},"
+  # Only pass in paths that are relative to the project.
+  if [[ "$RELATIVE_PATH" != "../"* ]]; then
+    INCLUDE+=("${RELATIVE_PATH}")
   fi
-  COMMA_SEP_FILES="${COMMA_SEP_FILES}${RELATIVE_PATH}"
 done
 
 ARGS=()
+if [[ ! -z $PROJECT ]]; then
+  ARGS+=("$PROJECT")
+fi
+if [[ $FOLDER -eq 1 ]]; then
+  ARGS+=("--folder")
+fi
 if [[ ! -z $VERBOSITY ]]; then
   ARGS+=("--verbosity" $VERBOSITY)
 fi
-if [[ ! -z $FOLDER ]]; then
-  ARGS+=("--folder" "$FOLDER")
+if [[ ${#EXCLUDE[@]} -gt 0 ]]; then
+  ARGS+=("--exclude" "${EXCLUDE[@]}")
 fi
-if [[ ! -z $WORKSPACE ]]; then
-  ARGS+=("--workspace" "$WORKSPACE")
-fi
-if [[ ! -z $EXCLUDE ]]; then
-  ARGS+=("--exclude" "$EXCLUDE")
-fi
-if [[ ! -z $COMMA_SEP_FILES ]]; then
-  ARGS+=("--files" "$COMMA_SEP_FILES")
+if [[ ${#INCLUDE[@]} -gt 0 ]]; then
+  ARGS+=("--include" "${INCLUDE[@]}")
 fi
 
+
+#echo "Running: /opt/dotnet-format/dotnet-format" "${ARGS[@]}"
 exec /opt/dotnet-format/dotnet-format "${ARGS[@]}"
