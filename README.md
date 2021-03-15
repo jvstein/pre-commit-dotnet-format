@@ -3,6 +3,11 @@ A plugin to support [`dotnet-format`](https://github.com/dotnet/format) in
 [`pre-commit`](https://github.com/pre-commit/pre-commit). This plugin relies on [`docker`](https://www.docker.com) being
 installed.
 
+## DEPRECATED
+Support for pre-commit has been [merged into
+`dotnet-format`](https://github.com/dotnet/format/blob/main/docs/integrations.md#pre-commitcom-hook-to-reformat). Use
+that.
+
 ## Using dotnet-format with pre-commit:
 Add this to your `.pre-commit-config.yaml`
 
